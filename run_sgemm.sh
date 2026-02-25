@@ -13,6 +13,11 @@
 
 KERNEL_NUM=${1:-1}
 
+module load profile/candidate
+module load nvhpc/24.5
+module load gcc/12.2.0
+module load cmake/4.1.2
+
 echo "============================================"
 echo "  SGEMM Kokkos - Kernel ${KERNEL_NUM}"
 echo "  Job ID:    ${SLURM_JOB_ID}"
@@ -20,16 +25,6 @@ echo "  Node:      $(hostname)"
 echo "  Date:      $(date)"
 echo "============================================"
 
-module load profile/candidate
-module load nvhpc/24.5
-module load gcc/12.2.0
-
-# Eventually move this to a CMakePresets.json file
-BUILD_DIR="build"
-mkdir -p "${BUILD_DIR}"
-cd "${BUILD_DIR}" && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j
-cd ..
-
 echo ""
 echo ">>> Running sgemm kernel ${KERNEL_NUM} ..."
-./${BUILD_DIR}/sgemm "${KERNEL_NUM}"
+${WORK}/AI/sgemm_kokkos/build/sgemm "${KERNEL_NUM}"

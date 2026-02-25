@@ -1,37 +1,38 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24) # Bumped to 3.24 to automatically fix CMP0135 warning
 project(NVIDIA_SGEMM_PRACTICE_KOKKOS LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# Kokkos > 5.0 requires C++20 or later
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(CheckLanguage)
-check_language(CUDA)
-
 option(SGEMM_KOKKOS_ENABLE_CUDA "Enable CUDA backend in Kokkos when available" ON)
 
 if(SGEMM_KOKKOS_ENABLE_CUDA)
+  # 1. Find the toolkit FIRST. This populates correct paths for the linker.
+  find_package(CUDAToolkit REQUIRED)
+  
+  # 2. Force Shared runtime to avoid static linking errors on NVHPC
+  set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+  
+  # 3. Now enable the language safely
   enable_language(CUDA)
   set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
-  set(CMAKE_CUDA_RUNTIME_LIBRARY None)
+  
   set(Kokkos_ENABLE_CUDA ON CACHE BOOL "" FORCE)
   set(Kokkos_ENABLE_CUDA_LAMBDA ON CACHE BOOL "" FORCE)
-  set(Kokkos_ARCH_AMPERE80 ON CACHE BOOL "" FORCE) # will set this is a preset.json file for Leonardo
+  set(Kokkos_ARCH_AMPERE80 ON CACHE BOOL "" FORCE)
 else()
   set(Kokkos_ENABLE_OPENMP ON CACHE BOOL "" FORCE)
 endif()
 
 set(Kokkos_ENABLE_SERIAL ON CACHE BOOL "" FORCE)
 
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
 include(FetchContent)
 FetchContent_Declare(
   Kokkos
-  URL https://github.com/kokkos/kokkos/archive/refs/tags/5.0.2.zip
+  URL https://github.com/kokkos/kokkos/archive/refs/tags/5.0.1.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP true # Cleanest way to fix the extraction warning
 )
 FetchContent_MakeAvailable(Kokkos)
 
@@ -42,4 +43,10 @@ add_executable(
 )
 
 target_include_directories(sgemm PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(sgemm PRIVATE Kokkos::kokkos)
+
+if(SGEMM_KOKKOS_ENABLE_CUDA)
+  # Link Kokkos and explicitly link the CUDA toolkit runtime just to be safe
+  target_link_libraries(sgemm PRIVATE Kokkos::kokkos CUDA::cudart)
+else()
+  target_link_libraries(sgemm PRIVATE Kokkos::kokkos)
+endif()
