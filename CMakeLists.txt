@@ -25,10 +25,13 @@ endif()
 
 set(Kokkos_ENABLE_SERIAL ON CACHE BOOL "" FORCE)
 
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 include(FetchContent)
 FetchContent_Declare(
   Kokkos
-  URL https://github.com/kokkos/kokkos/archive/refs/tags/5.0.0.zip
+  URL https://github.com/kokkos/kokkos/archive/refs/tags/5.0.2.zip
 )
 FetchContent_MakeAvailable(Kokkos)
 
