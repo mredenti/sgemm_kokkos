@@ -24,6 +24,7 @@ module load profile/candidate
 module load nvhpc/24.5
 module load gcc/12.2.0
 
+# Eventually move this to a CMakePresets.json file
 BUILD_DIR="build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}" && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j

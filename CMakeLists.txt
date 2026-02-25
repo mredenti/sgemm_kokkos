@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(NVIDIA_SGEMM_PRACTICE_KOKKOS LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Kokkos > 5.0 requires C++20 or later
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -17,7 +18,7 @@ if(SGEMM_KOKKOS_ENABLE_CUDA)
   set(CMAKE_CUDA_RUNTIME_LIBRARY None)
   set(Kokkos_ENABLE_CUDA ON CACHE BOOL "" FORCE)
   set(Kokkos_ENABLE_CUDA_LAMBDA ON CACHE BOOL "" FORCE)
-  set(Kokkos_ARCH_AMPERE80 ON CACHE BOOL "" FORCE)
+  set(Kokkos_ARCH_AMPERE80 ON CACHE BOOL "" FORCE) # will set this is a preset.json file for Leonardo
 else()
   set(Kokkos_ENABLE_OPENMP ON CACHE BOOL "" FORCE)
 endif()
